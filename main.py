@@ -1,4 +1,5 @@
 from src.textSummarizer.pipeline.stage_01_data_ingestion import DataIngestionTrainingPipeline
+from src.textSummarizer.pipeline.stage_02_data_validation import DataValidationTrainingPipeline
 from src.textSummarizer.logging import logger
 
 
