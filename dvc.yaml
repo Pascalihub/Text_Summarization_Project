@@ -1,0 +1,68 @@
+stages:
+  data_ingestion:
+    cmd: python src/textSummarizer/pipeline/stage_01_data_ingestion.py
+
+    deps:
+      - src/textSummarizer/pipeline/stage_01_data_ingestion.py
+      - config/config.yaml
+    outs:
+      - artifacts/data_ingestion/samsum_dataset
+    
+
+  data_validation:
+    cmd: python src/textSummarizer/pipeline/stage_02_data_validation.py
+    deps:
+      - src/textSummarizer/pipeline/stage_02_data_validation.py
+      - config/config.yaml
+    outs:
+      - artifacts/data_validation/status.txt
+     
+
+  data_transformation:
+    cmd: python src/textSummarizer/pipeline/stage_03_data_transformation.py
+    
+    deps:
+      - src/textSummarizer/pipeline/stage_03_data_transformation.py
+      - config/config.yaml
+      - artifacts/data_transformation/samsum_dataset/test/data-00000-of-00001.arrow
+      - artifacts/data_transformation/samsum_dataset/test/dataset_info.json
+      - artifacts/data_transformation/samsum_dataset/test/state.json
+      - artifacts/data_transformation/samsum_dataset/train/data-00000-of-00001.arrow
+      - artifacts/data_transformation/samsum_dataset/train/dataset_info.json
+      - artifacts/data_transformation/samsum_dataset/train/state.json
+      - artifacts/data_transformation/samsum_dataset/validation/data-00000-of-00001.arrow
+      - artifacts/data_transformation/samsum_dataset/validation/dataset_info.json
+      - artifacts/data_transformation/samsum_dataset/validation/state.json
+      - artifacts/data_transformation/samsum_dataset/dataset_dict.json
+    params:
+      - num_train_epochs
+      - warmup_steps
+      - per_device_train_batch_size
+      - weight_decay
+      - logging_steps
+      - evaluation_strategy
+      - eval_steps
+      - save_steps
+      - gradient_accumulation_steps
+    outs:
+      - artifacts/training/model.h5
+
+  evaluation:
+    cmd: python src/textSummarizer/pipeline/stage_04_data_validation.py
+    deps:
+      - src/textSummarizer/pipeline/stage_04_data_validation.py
+      - config/config.yaml
+      - artifacts/model_trainer
+    params:
+      - num_train_epochs
+      - warmup_steps
+      - per_device_train_batch_size
+      - weight_decay
+      - logging_steps
+      - evaluation_strategy
+      - eval_steps
+      - save_steps
+      - gradient_accumulation_steps
+    metrics:
+      - scores.json:
+          cache: false
