@@ -72,5 +72,8 @@ class ModelEvaluation:
         df = pd.DataFrame(rouge_dict, index = ['pegasus'] )
         df.to_csv(self.config.metric_file_name, index=False)
 
+    
+    
+
         
 

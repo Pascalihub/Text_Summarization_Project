@@ -8,7 +8,6 @@ stages:
     outs:
       - artifacts/data_ingestion/samsum_dataset
     
-
   data_validation:
     cmd: python src/textSummarizer/pipeline/stage_02_data_validation.py
     deps:
@@ -17,13 +16,23 @@ stages:
     outs:
       - artifacts/data_validation/status.txt
      
-
   data_transformation:
     cmd: python src/textSummarizer/pipeline/stage_03_data_transformation.py
     
     deps:
       - src/textSummarizer/pipeline/stage_03_data_transformation.py
       - config/config.yaml
+    params:
+      - num_train_epochs
+      - warmup_steps
+      - per_device_train_batch_size
+      - weight_decay
+      - logging_steps
+      - evaluation_strategy
+      - eval_steps
+      - save_steps
+      - gradient_accumulation_steps
+    outs:
       - artifacts/data_transformation/samsum_dataset/test/data-00000-of-00001.arrow
       - artifacts/data_transformation/samsum_dataset/test/dataset_info.json
       - artifacts/data_transformation/samsum_dataset/test/state.json
@@ -34,6 +43,12 @@ stages:
       - artifacts/data_transformation/samsum_dataset/validation/dataset_info.json
       - artifacts/data_transformation/samsum_dataset/validation/state.json
       - artifacts/data_transformation/samsum_dataset/dataset_dict.json
+
+  model_trainer:
+    cmd: python src/textSummarizer/pipeline/stage_04_model_trainer.py
+    deps:
+      - src/textSummarizer/pipeline/stage_04_model_trainer.py
+      - config/config.yaml
     params:
       - num_train_epochs
       - warmup_steps
@@ -45,14 +60,12 @@ stages:
       - save_steps
       - gradient_accumulation_steps
     outs:
-      - artifacts/training/model.h5
-
-  evaluation:
-    cmd: python src/textSummarizer/pipeline/stage_04_data_validation.py
+      - artifacts/model_trainer/
+  model_evaluation:
+    cmd: python src/textSummarizer/pipeline/stage_04_model_trainer.py
     deps:
-      - src/textSummarizer/pipeline/stage_04_data_validation.py
+      - src/textSummarizer/pipeline/stage_04_model_trainer.py
       - config/config.yaml
-      - artifacts/model_trainer
     params:
       - num_train_epochs
       - warmup_steps
@@ -63,6 +76,8 @@ stages:
       - eval_steps
       - save_steps
       - gradient_accumulation_steps
+    outs:
+      - artifacts/model_trainer
     metrics:
       - scores.json:
           cache: false
